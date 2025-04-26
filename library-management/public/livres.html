@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Livres</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Gestion des Livres</h1>
+  <button onclick="window.location.href='index.html'">Retour à l'accueil</button>
+
+  <!-- Formulaire pour ajouter/modifier un livre -->
+  <form id="livreForm">
+    <input type="hidden" id="livreId">
+    <input type="text" id="livreTitre" placeholder="Titre" required>
+    <input type="text" id="livreAuteur" placeholder="Auteur" required>
+    <input type="text" id="livreIsbn" placeholder="ISBN" required>
+    <button type="submit">Ajouter/Modifier</button>
+  </form>
+
+  <!-- Tableau pour afficher les livres -->
+  <table border="1">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Titre</th>
+        <th>Auteur</th>
+        <th>ISBN</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="livresList"></tbody>
+  </table>
+
+  <script>
+    const livreForm = document.getElementById('livreForm');
+    const livresList = document.getElementById('livresList');
+    const livreIdInput = document.getElementById('livreId');
+    const livreTitreInput = document.getElementById('livreTitre');
+    const livreAuteurInput = document.getElementById('livreAuteur');
+    const livreIsbnInput = document.getElementById('livreIsbn');
+
+    // Charger les livres (READ)
+    async function loadLivres() {
+      try {
+        const response = await fetch('http://localhost:3000/api/livres');
+        if (!response.ok) throw new Error('Erreur lors du chargement des livres');
+        const livres = await response.json();
+        livresList.innerHTML = '';
+        livres.forEach((livre) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${livre.id}</td>
+            <td>${livre.titre}</td>
+            <td>${livre.auteur}</td>
+            <td>${livre.isbn}</td>
+            <td>
+              <button onclick="editLivre(${livre.id}, '${livre.titre}', '${livre.auteur}', '${livre.isbn}')">Modifier</button>
+              <button onclick="deleteLivre(${livre.id})">Supprimer</button>
+            </td>
+          `;
+          livresList.appendChild(tr);
+        });
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Ajouter ou modifier un livre (CREATE/UPDATE)
+    livreForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = livreIdInput.value;
+      const titre = livreTitreInput.value;
+      const auteur = livreAuteurInput.value;
+      const isbn = livreIsbnInput.value;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `http://localhost:3000/api/livres/${id}` : 'http://localhost:3000/api/livres';
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ titre, auteur, isbn }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error);
+        }
+        livreForm.reset();
+        livreIdInput.value = '';
+        loadLivres();
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+      }
+    });
+
+    // Pré-remplir le formulaire pour modification (UPDATE)
+    function editLivre(id, titre, auteur, isbn) {
+      livreIdInput.value = id;
+      livreTitreInput.value = titre;
+      livreAuteurInput.value = auteur;
+      livreIsbnInput.value = isbn;
+    }
+
+    // Supprimer un livre (DELETE)
+    async function deleteLivre(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/livres/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Erreur lors de la suppression');
+        loadLivres();
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+      }
+    }
+
+    // Charger les livres au démarrage
+    loadLivres();
+  </script>
+</body>
+</html>

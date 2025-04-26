@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Étudiants</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Gestion des Étudiants</h1>
+  <button onclick="window.location.href='index.html'">Retour à l'accueil</button>
+
+  <!-- Formulaire pour ajouter/modifier un étudiant -->
+  <form id="etudiantForm">
+    <input type="hidden" id="etudiantId">
+    <input type="text" id="etudiantNom" placeholder="Nom" required>
+    <input type="email" id="etudiantEmail" placeholder="Email" required>
+    <button type="submit">Ajouter/Modifier</button>
+  </form>
+
+  <!-- Tableau pour afficher les étudiants -->
+  <table border="1">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="etudiantsList"></tbody>
+  </table>
+
+  <script>
+    const etudiantForm = document.getElementById('etudiantForm');
+    const etudiantsList = document.getElementById('etudiantsList');
+    const etudiantIdInput = document.getElementById('etudiantId');
+    const etudiantNomInput = document.getElementById('etudiantNom');
+    const etudiantEmailInput = document.getElementById('etudiantEmail');
+
+    // Charger les étudiants (READ)
+    async function loadEtudiants() {
+      try {
+        const response = await fetch('http://localhost:3000/api/etudiants');
+        if (!response.ok) throw new Error('Erreur lors du chargement des étudiants');
+        const etudiants = await response.json();
+        etudiantsList.innerHTML = '';
+        etudiants.forEach((etudiant) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${etudiant.id}</td>
+            <td>${etudiant.nom}</td>
+            <td>${etudiant.email}</td>
+            <td>
+              <button onclick="editEtudiant(${etudiant.id}, '${etudiant.nom}', '${etudiant.email}')">Modifier</button>
+              <button onclick="deleteEtudiant(${etudiant.id})">Supprimer</button>
+            </td>
+          `;
+          etudiantsList.appendChild(tr);
+        });
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Ajouter ou modifier un étudiant (CREATE/UPDATE)
+    etudiantForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = etudiantIdInput.value;
+      const nom = etudiantNomInput.value;
+      const email = etudiantEmailInput.value;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `http://localhost:3000/api/etudiants/${id}` : 'http://localhost:3000/api/etudiants';
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, email }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error);
+        }
+        etudiantForm.reset();
+        etudiantIdInput.value = '';
+        loadEtudiants();
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+      }
+    });
+
+    // Pré-remplir le formulaire pour modification (UPDATE)
+    function editEtudiant(id, nom, email) {
+      etudiantIdInput.value = id;
+      etudiantNomInput.value = nom;
+      etudiantEmailInput.value = email;
+    }
+
+    // Supprimer un étudiant (DELETE)
+    async function deleteEtudiant(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/etudiants/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Erreur lors de la suppression');
+        loadEtudiants();
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+      }
+    }
+
+    loadEtudiants();
+  </script>
+</body>
+</html>

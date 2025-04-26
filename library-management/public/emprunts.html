@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Emprunts</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Gestion des Emprunts</h1>
+  <button onclick="window.location.href='index.html'">Retour à l'accueil</button>
+
+  <!-- Formulaire pour ajouter/modifier un emprunt -->
+  <form id="empruntForm">
+    <input type="hidden" id="empruntId">
+    <select id="empruntEtudiantId" required>
+      <option value="">Sélectionner un étudiant</option>
+    </select>
+    <select id="empruntLivreId" required>
+      <option value="">Sélectionner un livre</option>
+    </select>
+    <input type="date" id="empruntDateEmprunt" required>
+    <input type="date" id="empruntDateRetour">
+    <button type="submit">Ajouter/Modifier</button>
+  </form>
+
+  <!-- Tableau pour afficher les emprunts -->
+  <table border="1">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Étudiant</th>
+        <th>Livre</th>
+        <th>Date d'emprunt</th>
+        <th>Date de retour</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="empruntsList"></tbody>
+  </table>
+
+  <script>
+    const empruntForm = document.getElementById('empruntForm');
+    const empruntsList = document.getElementById('empruntsList');
+    const empruntIdInput = document.getElementById('empruntId');
+    const empruntEtudiantIdInput = document.getElementById('empruntEtudiantId');
+    const empruntLivreIdInput = document.getElementById('empruntLivreId');
+    const empruntDateEmpruntInput = document.getElementById('empruntDateEmprunt');
+    const empruntDateRetourInput = document.getElementById('empruntDateRetour');
+
+    // Charger les étudiants pour le menu déroulant
+    async function loadEtudiantsForSelect() {
+      try {
+        const response = await fetch('http://localhost:3000/api/etudiants');
+        if (!response.ok) throw new Error('Erreur lors du chargement des étudiants');
+        const etudiants = await response.json();
+        const etudiantSelect = document.getElementById('empruntEtudiantId');
+        etudiantSelect.innerHTML = '<option value="">Sélectionner un étudiant</option>';
+        etudiants.forEach((etudiant) => {
+          const option = document.createElement('option');
+          option.value = etudiant.id;
+          option.textContent = etudiant.nom;
+          etudiantSelect.appendChild(option);
+        });
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Charger les livres pour le menu déroulant
+    async function loadLivresForSelect() {
+      try {
+        const response = await fetch('http://localhost:3000/api/livres');
+        if (!response.ok) throw new Error('Erreur lors du chargement des livres');
+        const livres = await response.json();
+        const livreSelect = document.getElementById('empruntLivreId');
+        livreSelect.innerHTML = '<option value="">Sélectionner un livre</option>';
+        livres.forEach((livre) => {
+          const option = document.createElement('option');
+          option.value = livre.id;
+          option.textContent = livre.titre;
+          livreSelect.appendChild(option);
+        });
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Charger les emprunts (READ)
+    async function loadEmprunts() {
+      try {
+        const response = await fetch('http://localhost:3000/api/emprunts');
+        if (!response.ok) throw new Error('Erreur lors du chargement des emprunts');
+        const emprunts = await response.json();
+        empruntsList.innerHTML = '';
+        emprunts.forEach((emprunt) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${emprunt.id}</td>
+            <td>${emprunt.Etudiant ? emprunt.Etudiant.nom : 'N/A'}</td>
+            <td>${emprunt.Livre ? emprunt.Livre.titre : 'N/A'}</td>
+            <td>${new Date(emprunt.dateEmprunt).toLocaleDateString()}</td>
+            <td>${emprunt.dateRetour ? new Date(emprunt.dateRetour).toLocaleDateString() : 'Non retourné'}</td>
+            <td>
+              <button onclick="editEmprunt(${emprunt.id}, ${emprunt.etudiantId}, ${emprunt.livreId}, '${emprunt.dateEmprunt}', '${emprunt.dateRetour || ''}')">Modifier</button>
+              <button onclick="deleteEmprunt(${emprunt.id})">Supprimer</button>
+            </td>
+          `;
+          empruntsList.appendChild(tr);
+        });
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // Ajouter ou modifier un emprunt (CREATE/UPDATE)
+    empruntForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = empruntIdInput.value;
+      const etudiantId = empruntEtudiantIdInput.value;
+      const livreId = empruntLivreIdInput.value;
+      const dateEmprunt = empruntDateEmpruntInput.value;
+      const dateRetour = empruntDateRetourInput.value || null;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `http://localhost:3000/api/emprunts/${id}` : 'http://localhost:3000/api/emprunts';
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ etudiantId, livreId, dateEmprunt, dateRetour }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error);
+        }
+        empruntForm.reset();
+        empruntIdInput.value = '';
+        loadEmprunts();
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+      }
+    });
+
+    // Pré-remplir le formulaire pour modification (UPDATE)
+    function editEmprunt(id, etudiantId, livreId, dateEmprunt, dateRetour) {
+      empruntIdInput.value = id;
+      empruntEtudiantIdInput.value = etudiantId;
+      empruntLivreIdInput.value = livreId;
+      empruntDateEmpruntInput.value = dateEmprunt.split('T')[0];
+      empruntDateRetourInput.value = dateRetour ? dateRetour.split('T')[0] : '';
+    }
+
+    // Supprimer un emprunt (DELETE)
+    async function deleteEmprunt(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/emprunts/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Erreur lors de la suppression');
+        loadEmprunts();
+      } catch (error) {
+        alert(`Erreur : ${error.message}`);
+      }
+    }
+
+    // Charger les données au démarrage
+    loadEtudiantsForSelect();
+    loadLivresForSelect();
+    loadEmprunts();
+  </script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - Gestion de Bibliothèque</title>
+<style>
+    /* Réinitialisation des styles par défaut */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Styles généraux */
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f7fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* En-tête et barre de navigation */
+header {
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.nav-links {
+  display: flex;
+  gap: 15px;
+}
+
+.nav-button, .logout-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.nav-button {
+  background-color: #3498db;
+  color: #ffffff;
+}
+
+.nav-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.logout-button {
+  background-color: #e74c3c;
+  color: #ffffff;
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* Contenu principal */
+main {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* Section de bienvenue (pour index.html) */
+.welcome-section {
+  text-align: center;
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+}
+
+.welcome-section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.welcome-section p {
+  font-size: 1.1rem;
+  color: #7f8c8d;
+}
+
+/* Section de connexion (pour login.html) */
+.login-section {
+  max-width: 400px;
+  margin: 50px auto;
+  text-align: center;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 1s ease forwards;
+}
+
+.login-section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+/* Styles pour les formulaires (utilisé par login.html, etudiants.html, etc.) */
+form {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+button[type="submit"] {
+  background-color: #3498db;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #2980b9;
+}
+
+/* Styles pour les tableaux (utilisé par etudiants.html, livres.html, emprunts.html) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #3498db;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+td button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+  transition: background-color 0.3s ease;
+}
+
+td button:first-child {
+  background-color: #f39c12;
+  color: #ffffff;
+}
+
+td button:first-child:hover {
+  background-color: #e67e22;
+}
+
+td button:last-child {
+  background-color: #e74c3c;
+  color: #ffffff;
+}
+
+td button:last-child:hover {
+  background-color: #c0392b;
+}
+
+/* Pied de page */
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+footer p {
+  font-size: 0.9rem;
+}
+
+/* Animation d'entrée */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.login-section {
+  opacity: 0;
+}
+
+/* Responsivité */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .nav-button, .logout-button {
+    width: 100%;
+  }
+
+  .login-section {
+    margin: 20px;
+    padding: 20px;
+  }
+}
+</style> 
+ <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- En-tête -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <h1>Gestion de Bibliothèque</h1>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Contenu principal -->
+  <main>
+    <section class="login-section">
+      <h2>Connexion</h2>
+      <!-- Formulaire de connexion -->
+      <form id="loginForm">
+        <label for="username">Nom d'utilisateur</label>
+        <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        <button type="submit">Se connecter</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Pied de page -->
+  <footer>
+    <p>© 2025 Gestion de Bibliothèque. Tous droits réservés.</p>
+  </footer>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    // Gestion de la soumission du formulaire
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      // Vérification des identifiants
+      if (username === 'admin' && password === 'admin') {
+        // Stocker un indicateur de connexion dans localStorage
+        localStorage.setItem('isLoggedIn', 'true');
+        // Rediriger vers la page d'index
+        window.location.href = 'index.html';
+      } else {
+        alert('Nom d\'utilisateur ou mot de passe incorrect.');
+      }
+    });
+  </script>
+</body>
+</html>
