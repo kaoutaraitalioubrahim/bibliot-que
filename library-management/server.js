@@ -27,11 +27,13 @@ app.use('/api/emprunts', empruntsRouter);
 // Synchroniser la base de données et démarrer le serveur
 const PORT = process.env.PORT || 3000;
 
-sequelize.sync({ force: true }).then(() => {
-  console.log('Base de données synchronisée');
-  app.listen(PORT, () => {
-    console.log(`Serveur démarré sur le port ${PORT}`);
+sequelize.sync()
+  .then(() => {
+    console.log('Base de données synchronisée');
+    app.listen(PORT, () => {
+      console.log(`Serveur démarré sur le port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Erreur lors de la synchronisation de la base de données:', error);
   });
-}).catch((error) => {
-  console.error('Erreur lors de la synchronisation de la base de données:', error);
-});
